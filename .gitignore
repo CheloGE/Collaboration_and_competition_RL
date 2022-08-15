@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Avoid compiled binaries from unity agents as their heavy to upload
+simulation_env/
