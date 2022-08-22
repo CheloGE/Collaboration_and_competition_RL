@@ -3,3 +3,7 @@ tensorflow==1.7.1
 protobuf==3.5.2
 unityagents==0.4.0 
 torchsummary==1.5.1
+torch==1.10.1
+tensorboardX==2.5.1
+progressbar==2.5
+imageio==2.1.2
