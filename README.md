@@ -4,9 +4,9 @@ The goal of this repo is to train two agents in the form of tenis rackets and ma
 
 ## Project Details
 
-The below illustration shows the final outcome of the current solution that uses a multi agent actor-critic mehod to solve the problem.
+The below illustration shows the final outcome of the current solution that uses a multi agent actor-critic method to solve the problem.
 
-> TODO: Here goes the multiagent image final outcome
+![](./docs/final_performance.gif)
 
 The observation space consists of 24 variables corresponding to the position and velocity of the ball and racket. Each agent receives its own, local observation. Two continuous actions are available, corresponding to movement toward (or away from) the net, and jumping.
 
@@ -58,10 +58,9 @@ For this project a docker container was created, please follow the following ste
 
 The main script is in the [tennis.ipynb](tennis.ipynb) file, where you can run a dummy model that selects and action randomly. You can also train a MADDPG model with 2 agents and use it in inference of new cases.
 
-> TODO: Update the below folders with this project folders
+If you want to check the agents model you can find it under the folder: [agents/maddpg/](agents/maddpg/). In this folder the main logic for the agent models is implemented in the [maddpg.py](agents/maddpg/maddpg.py). 
 
-If you want to check the agents model you can find it under the folder: [agents/ddpg/](agents/ddpg/). In this folder the main logic for the agent models is implemented in the [ddpg_agent.py](agents/ddpg/ddpg_agent.py). 
-
-* [actor_critic_models.py](agents/ddpg/actor_critic_models.py) constains the two neural networks used to build the ddpg agent
-* [helpers.py](agents/ddpg/helpers.py) constains all ddpg funtions that assist ddpg logic such as the replay buffer and the Ornstein-Uhlenbeck noise.
-* Finally the [parameters.py](agents/ddpg/parameters.py) script constains all the parameters that could be changed in this project. If you are interested in trying different training processes this is the file you are looking for.
+* [actor_critic_models.py](agents/maddpg/ddpg/actor_critic_models.py) constains the two neural networks used to build the ddpg agent
+* [ddpg_agent.py](agents/maddpg/ddpg/ddpg_agent.py) constains the code to build a ddpg agent. This script is used by the maddpg for creating multiple ddpg agents.
+* [helpers.py](agents/maddpg/ddpg/helpers.py) constains all maddpg helper funtions that assist maddpg logic such as the replay buffer and the Ornstein-Uhlenbeck noise.
+* Finally the [parameters.py](agents/maddpg/parameters.py) script constains all the parameters that could be changed in this project. If you are interested in trying different training processes this is the file you are looking for.
