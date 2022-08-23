@@ -69,15 +69,13 @@ class DDPG_Agent():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
         if noise:
-            # print(f"action: {action}")
             action += noise*self.noise.sample()
-        # print(f"action with noise: {action}")
         return np.clip(action, -1, 1)         
 
     def reset(self):
         self.noise.reset()
 
-    def learn(self, agent_ind, experiences, gamma, all_next_actions):
+    def learn(self, agent_ind, experiences, gamma, all_agents_next_actions, all_agents_actions):
         """Update policy and value parameters using given batch of experience tuples.
         Q_targets = r + γ * critic_target(next_state, actor_target(next_state))
         where:
@@ -85,17 +83,20 @@ class DDPG_Agent():
             critic_target(state, action) -> Q-value
         Params
         ======
+            agent_ind(int): agent index. i.e. 1st agent index = 0, 2nd agent index = 1, etc...
             experiences (Tuple[torch.Tensor]): tuple of (s, a, r, s', done) tuples 
             gamma (float): discount factor
+            all_agents_next_actions(list): all next actions from all agents in the environment (using the actor target network)
+            all_agents_actions(list): all actions from all agents in the environment (using the actor local network without noise)
         """
-
+        id = agent_ind
         states, actions, rewards, next_states, dones = experiences
 
         # ---------------------------- update critic ---------------------------- #
         # get predicted next-state actions and Q values from target models
         self.critic_optimizer.zero_grad()
         agent_ind = torch.tensor([agent_ind]).to(device)
-        actions_next = torch.cat(all_next_actions, dim=1).to(device)
+        actions_next = torch.cat(all_agents_next_actions, dim=1).to(device)
         with torch.no_grad():
             q_targets_next = self.critic_target.forward(next_states, actions_next)
         # compute Q targets for current states (y_i)
@@ -109,9 +110,12 @@ class DDPG_Agent():
         self.critic_optimizer.step()
 
         # ---------------------------- update actor ---------------------------- #
-        # compute actor loss
+        # compute actor loss with actions that don't have noise
         self.actor_optimizer.zero_grad()
-        actor_loss = -self.critic_local.forward(states, actions).mean()
+        # detaching actions from other agents as no gradient will be used for them
+        actions_pred = [actions if i == id else actions.detach() for i, actions in enumerate(all_agents_actions)]
+        actions_pred = torch.cat(actions_pred, dim=1).to(device)
+        actor_loss = -self.critic_local(states, actions_pred).mean()
         # minimize loss
         actor_loss.backward()
         self.actor_optimizer.step()

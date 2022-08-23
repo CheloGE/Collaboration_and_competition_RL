@@ -8,6 +8,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f'using device: {device}')
 
 ## This algorithm is adapted from the maddpg version in the RL Udacity lessons
+## And the following Udacity implementation: https://github.com/udacity/deep-reinforcement-learning/blob/master/ddpg-pendulum/ddpg_agent.py
 class MADDPG:
     def __init__(self, no_agents, state_size, action_size, random_seed):
         
@@ -46,24 +47,29 @@ class MADDPG:
         """
 
         
-        
+        actions_all_agents = []
         next_actions_batch_all_agents = []
-        # Get next actions
         for i, agent in enumerate(self.maddpg_agents):
             
             agent_ind = torch.tensor([i]).to(device) # agent index
-            _, _, _, next_state_batch, _ = experiences_batch_for_all_agents[i] # extracting experience info for each agent
-
+            states, _, _, next_state_batch, _ = experiences_batch_for_all_agents[i] # extracting experience info for each agent
+            
+            state = states.reshape(-1, self.no_agents, self.state_size)
+            state = state.index_select(dim=1, index=agent_ind).squeeze(1)
+            # Collecting all actions without noise to update the actors of each agent
+            action = agent.actor_local(state) 
+            actions_all_agents.append(action) 
+            
             # reshape back to non flatten data to extract the info for agent i
             next_state_batch = next_state_batch.reshape(-1, self.no_agents, self.state_size) 
             next_state_batch = next_state_batch.index_select(dim=1, index=agent_ind).squeeze(1)
-            # next actions batch based on next states batch
+            # next actions batch based on next states batch using the actor target without noise
             next_action_batch = agent.actor_target(next_state_batch)
             next_actions_batch_all_agents.append(next_action_batch)
         
         # each agent learns from its experience sample
         for i, ddpg_agent in enumerate(self.maddpg_agents):
-            ddpg_agent.learn(i, experiences_batch_for_all_agents[i], gamma, next_actions_batch_all_agents)
+            ddpg_agent.learn(i, experiences_batch_for_all_agents[i], gamma, next_actions_batch_all_agents, actions_all_agents)
 
 
 

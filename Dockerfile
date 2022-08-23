@@ -47,7 +47,8 @@ RUN apt-get update --fix-missing && apt-get upgrade -y && apt-get install -y \
     vim \
     unzip \
     zip \
-    zlib1g-dev
+    zlib1g-dev \
+    python3-tk
 
 WORKDIR /project
 
